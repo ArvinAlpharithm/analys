@@ -49,7 +49,7 @@ def initialize_agent():
 def create_performance_chart(df, metric):
     """Create visualization based on metric type"""
     if metric == "Star Performer":
-        # Get top 3 performers
+        # Get top 3 performers - Line Chart
         top_3_affiliates = df.groupby('affiliate_name')['commission_earned'].sum()\
             .sort_values(ascending=False).head(3).index.tolist()
         
@@ -65,7 +65,7 @@ def create_performance_chart(df, metric):
         )
 
     elif metric == "Cash Cow":
-        # Get top 3 most consistent
+        # Get top 3 most consistent - Line Chart
         consistency = df.groupby('affiliate_name')['commission_earned'].agg(['mean', 'std']).fillna(0)
         consistency['cv'] = consistency['std'] / consistency['mean']
         top_3_consistent = consistency.sort_values('cv').head(3).index.tolist()
@@ -82,57 +82,54 @@ def create_performance_chart(df, metric):
         )
 
     elif metric == "Rising Star":
-        # Calculate growth rates and get top 3 growing
+        # Fastest growing affiliates - Bar Chart
         recent = df.sort_values('date').groupby('affiliate_name').tail(10)
         growth = recent.groupby('affiliate_name')['commission_earned'].mean() / \
                 df.groupby('affiliate_name')['commission_earned'].mean()
-        top_3_growing = growth.sort_values(ascending=False).head(3).index.tolist()
+        growth_df = growth.sort_values(ascending=False).head(3).reset_index()
+        growth_df.columns = ['affiliate_name', 'growth_rate']  # Rename columns for clarity
         
-        filtered_df = df[df['affiliate_name'].isin(top_3_growing)]
-        
-        fig = px.line(
-            filtered_df.groupby(['date', 'affiliate_name'])['commission_earned'].sum().reset_index(),
-            x='date', 
-            y='commission_earned', 
-            color='affiliate_name',
-            title='Commission Trends - Fastest Growing Affiliates',
-            labels={'commission_earned': 'Commission ($)', 'date': 'Date', 'affiliate_name': 'Affiliate'}
+        fig = px.bar(
+            growth_df,
+            x='affiliate_name',
+            y='growth_rate',
+            title='Top 3 Fastest Growing Affiliates',
+            labels={'affiliate_name': 'Affiliate', 'growth_rate': 'Growth Rate'},
+            color='affiliate_name'
         )
 
     elif metric == "Client Magnet":
-        # Get top 3 client recruiters
+        # Top client recruiters - Bar Chart
         top_3_recruiters = df.groupby('affiliate_name')['new_clients'].sum()\
-            .sort_values(ascending=False).head(3).index.tolist()
+            .sort_values(ascending=False).head(3).reset_index()
+        top_3_recruiters.columns = ['affiliate_name', 'new_clients']
         
-        filtered_df = df[df['affiliate_name'].isin(top_3_recruiters)]
-        
-        fig = px.line(
-            filtered_df.groupby(['date', 'affiliate_name'])['new_clients'].sum().reset_index(),
-            x='date', 
-            y='new_clients', 
-            color='affiliate_name',
-            title='New Client Acquisition Trends - Top 3 Recruiters',
-            labels={'new_clients': 'New Clients', 'date': 'Date', 'affiliate_name': 'Affiliate'}
+        fig = px.bar(
+            top_3_recruiters,
+            x='affiliate_name',
+            y='new_clients',
+            title='Top 3 Client Recruiters',
+            labels={'affiliate_name': 'Affiliate', 'new_clients': 'New Clients'},
+            color='affiliate_name'
         )
 
     elif metric == "Volume King":
-        # Get top 3 volume generators
+        # Top volume generators - Bar Chart
         top_3_volume = df.groupby('affiliate_name')['trading_volume'].sum()\
-            .sort_values(ascending=False).head(3).index.tolist()
+            .sort_values(ascending=False).head(3).reset_index()
+        top_3_volume.columns = ['affiliate_name', 'trading_volume']
         
-        filtered_df = df[df['affiliate_name'].isin(top_3_volume)]
-        
-        fig = px.line(
-            filtered_df.groupby(['date', 'affiliate_name'])['trading_volume'].sum().reset_index(),
-            x='date', 
-            y='trading_volume', 
-            color='affiliate_name',
-            title='Trading Volume Trends - Top 3 by Volume',
-            labels={'trading_volume': 'Trading Volume ($)', 'date': 'Date', 'affiliate_name': 'Affiliate'}
+        fig = px.bar(
+            top_3_volume,
+            x='affiliate_name',
+            y='trading_volume',
+            title='Top 3 Trading Volume Generators',
+            labels={'affiliate_name': 'Affiliate', 'trading_volume': 'Trading Volume ($)'},
+            color='affiliate_name'
         )
 
     else:  # Market Specialist
-        # Get top 3 specialists by total commission
+        # Top market specialists by total commission - Line Chart
         top_3_specialists = df.groupby('affiliate_name')['commission_earned'].sum()\
             .sort_values(ascending=False).head(3).index.tolist()
         
@@ -163,6 +160,7 @@ def create_performance_chart(df, metric):
     fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor='LightGray')
     
     return fig
+
 
 def analyze_data(df, metric):
     """Analyze data based on selected metric"""
@@ -252,6 +250,7 @@ def get_agent_tips(metric, affiliate_name):
     return tips[metric]
 
 def main():
+    st.title("📊 Deriv Affiliate Dashboard")
     
     try:
         # Load and display data
