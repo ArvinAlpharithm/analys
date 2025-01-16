@@ -252,7 +252,6 @@ def get_agent_tips(metric, affiliate_name):
     return tips[metric]
 
 def main():
-    st.title("📊 Deriv Affiliate Dashboard")
     
     try:
         # Load and display data
