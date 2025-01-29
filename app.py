@@ -12,7 +12,7 @@ from langchain_experimental.agents.agent_toolkits import create_csv_agent
 load_dotenv()
 
 # Page config
-st.set_page_config(page_title="Deriv Affiliate Dashboard", layout="wide")
+st.set_page_config(page_title="Dashboard", layout="wide")
 
 # Initialize session states
 if 'csv_agent' not in st.session_state:
